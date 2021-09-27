@@ -15,6 +15,10 @@ Parameters:
     Type: String
     Default: ""
     Description: Email address to send notification
+  ClusterName:
+    Type: String
+    Default: ""
+    Description: EKS Cluster name to monitor
 
 Resources:
   SNSTopicEKSLogs:
@@ -34,7 +38,9 @@ Resources:
         GetLog:
           Type: CloudWatchLogs # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            LogGroupName: /aws/eks/tgw-eu-west-1/cluster
+            LogGroupName: !Sub
+              - "/aws/eks/${ClusterName}/cluster"
+              - { ClusterName: !Ref ClusterName }
             FilterPattern: '{ $.requestObject.status.containerStatuses[0].state.terminated.reason = "OOMKilled" }'
       Environment:
         Variables:

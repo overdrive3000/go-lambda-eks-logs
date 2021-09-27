@@ -68,7 +68,7 @@ AWS Lambda Golang runtime requires a flat folder with the executable generated o
 To deploy your application for the first time, run the following in your shell:
 
 ```bash
-sam deploy --parameter-overrides SNSEmail=youremail@example.com --guided
+sam deploy sam deploy --parameter-overrides SNSEmail=<EMAIL_TO_SEND_NOTIFICATION> ClusterName=<MY_CLUSTER> --guided
 ```
 
 The command will package and deploy your application to AWS, with a series of prompts:
