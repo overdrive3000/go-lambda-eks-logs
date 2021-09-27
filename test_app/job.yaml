@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stress
+  labels:
+    jobgroup: stress
+spec:
+  backoffLimit: 0
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      name: stress
+    spec:
+      containers:
+        - name: stress
+          imagePullPolicy: IfNotPresent
+          image: overdrive3000/stress:oom-1
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 256Mi
+      restartPolicy: Never

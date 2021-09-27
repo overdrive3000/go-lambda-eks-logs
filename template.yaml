@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  go-lambda-eks-logs
+  
+  Lambda function that parse EKS Control Plane Log and send alarm.
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 5
+
+Parameters:
+  SNSEmail:
+    Type: String
+    Default: ""
+    Description: Email address to send notification
+
+Resources:
+  SNSTopicEKSLogs:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      Subscription:
+        - Endpoint: !Ref SNSEmail
+          Protocol: "email"
+      TopicName: "EKSLogs"
+  GoLambdaEKSLogs:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: go-lambda-eks-logs/
+      Handler: go-lambda-eks-logs
+      Runtime: go1.x
+      Events:
+        GetLog:
+          Type: CloudWatchLogs # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            LogGroupName: /aws/eks/tgw-eu-west-1/cluster
+            FilterPattern: '{ $.requestObject.status.containerStatuses[0].state.terminated.reason = "OOMKilled" }'
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref SNSTopicEKSLogs
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName:
+              !GetAtt SNSTopicEKSLogs.TopicName
